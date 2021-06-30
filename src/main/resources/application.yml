@@ -1,0 +1,28 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: authserver
+
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/oauth2?useUnicode=yes&characterEncoding=UTF-8
+    username: admin
+    password: admin
+    hikari:
+      data-source-properties:
+        stringtype: unspecified
+        useUnicode: true
+        characterEncoding: UTF-8
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+config:
+  oauth2:
+    clientId: talk2amareswaran
+    clientSecret: talk2amareswaran@123
+  jwt:
+    secret-key: password
+    alias: oauth2
