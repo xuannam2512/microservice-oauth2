@@ -1,4 +1,4 @@
-package com.microservice.oauth2.config.redis;
+package com.microservice.oauth2.redis.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

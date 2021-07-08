@@ -42,3 +42,8 @@ config:
   jwt:
     secret-key: password
     alias: oauth2
+
+redis:
+  host: localhost
+  port: 6379
+  expired-time: 86400 # 24 hour

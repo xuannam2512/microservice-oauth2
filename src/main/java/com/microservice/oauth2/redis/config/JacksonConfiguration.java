@@ -1,4 +1,4 @@
-package com.microservice.oauth2.config.redis;
+package com.microservice.oauth2.redis.config;
 
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

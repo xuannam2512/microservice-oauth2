@@ -2,6 +2,8 @@ package com.microservice.oauth2.controller;
 
 import com.microservice.oauth2.config.oauth2.CustomAccessTokenConverter;
 import com.microservice.oauth2.domain.bean.UserDto;
+import com.microservice.oauth2.redis.RedisRepository;
+import com.microservice.oauth2.redis.model.RedisRolePermission;
 import com.microservice.oauth2.service.RefreshTokenService;
 import com.microservice.oauth2.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +18,7 @@ import org.springframework.security.oauth2.provider.error.WebResponseExceptionTr
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class AuthController {
     private final ResourceServerTokenServices resourceServerTokenServices;
     private final CustomAccessTokenConverter customAccessTokenConverter;
     private final WebResponseExceptionTranslator<OAuth2Exception> exceptionTranslator = new DefaultWebResponseExceptionTranslator();
+    private final RedisRepository<RedisRolePermission> redisRepository;
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody UserDto userDto) {
@@ -63,17 +65,20 @@ public class AuthController {
             throw new InvalidTokenException("Token has expired");
         } else {
             OAuth2Authentication authentication = resourceServerTokenServices.loadAuthentication(accessToken.getValue());
-            var permissionList = userService.getPermissionByUserId(Integer.valueOf(accessToken.getAdditionalInformation().get("id").toString()));
+            var role = ((ArrayList<String>)accessToken.getAdditionalInformation().get("authorities")).get(0);
+            var redisRolePermissionOpt = redisRepository.get(role);
+            if (redisRolePermissionOpt.isPresent()) {
+                var permissionList = redisRolePermissionOpt.get().getPermissions();
+                // check path and method
+                var isMatched = permissionList.stream()
+                        .anyMatch(permission -> path.equals(permission.getPath()) && method.equals(permission.getMethod()));
 
-            // check path and method
-            var isMatched = permissionList.stream()
-                    .anyMatch(permission -> path.equals(permission.getPath()) && method.equals(permission.getMethod()));
-
-            if (isMatched) {
-                var newAccessToken = new DefaultOAuth2AccessToken(accessToken);
-                newAccessToken.setExpiration(new Date(System.currentTimeMillis() + 3600 * 1000L));
-                var newAccessTokenValue = customAccessTokenConverter.encode(newAccessToken, authentication);
-                return ResponseEntity.ok(Map.of("accessToken", newAccessTokenValue));
+                if (isMatched) {
+                    var newAccessToken = new DefaultOAuth2AccessToken(accessToken);
+                    newAccessToken.setExpiration(new Date(System.currentTimeMillis() + 3600 * 1000L));
+                    var newAccessTokenValue = customAccessTokenConverter.encode(newAccessToken, authentication);
+                    return ResponseEntity.ok(Map.of("accessToken", newAccessTokenValue));
+                }
             }
 
             throw new InvalidTokenException("No permission");
@@ -82,7 +87,6 @@ public class AuthController {
 
     @ExceptionHandler({InvalidTokenException.class})
     public ResponseEntity<OAuth2Exception> handleException(Exception e) throws Exception {
-        log.info("Handling error: " + e.getClass().getSimpleName() + ", " + e.getMessage());
         InvalidTokenException e400 = new InvalidTokenException(e.getMessage()) {
             public int getHttpErrorCode() {
                 return 400;
