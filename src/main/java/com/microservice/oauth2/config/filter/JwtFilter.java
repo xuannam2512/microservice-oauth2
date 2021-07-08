@@ -2,6 +2,7 @@ package com.microservice.oauth2.config.filter;
 
 import com.microservice.oauth2.config.oauth2.CustomAccessTokenConverter;
 import com.microservice.oauth2.config.security.CustomUserDetails;
+import com.microservice.oauth2.constant.Status;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.annotation.Order;
@@ -38,10 +39,11 @@ public class JwtFilter extends GenericFilter {
                     if (claims.get("id") != null && claims.get("username") != null && claims.get("authorities") != null) {
                         var id = Integer.valueOf(claims.get("id").toString());
                         var username = claims.get("username").toString();
+                        var status = claims.get("status").toString();
                         List<SimpleGrantedAuthority> authorities = Stream.of(claims.get("authorities"))
                                 .map(authority -> new SimpleGrantedAuthority(String.valueOf(authority)))
                                 .collect(Collectors.toList());
-                        var principal = new CustomUserDetails(id, username, null, authorities);
+                        var principal = new CustomUserDetails(id, username, null, Status.valueOf(status), authorities);
                         var authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }

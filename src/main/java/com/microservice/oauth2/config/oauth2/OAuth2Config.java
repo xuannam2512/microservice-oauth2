@@ -45,7 +45,9 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     public void configure(AuthorizationServerSecurityConfigurer security) {
         security.tokenKeyAccess("permitAll()")
                 .tokenKeyAccess("isAuthenticated()")
-                .checkTokenAccess("isAuthenticated()");
+                .checkTokenAccess("isAuthenticated()")
+                .accessDeniedHandler(new MyAccessDeniedHandler())
+                .authenticationEntryPoint(new MyAuthenticationEntryPoint());
     }
 
     @Override
@@ -64,7 +66,8 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
                 .tokenServices(tokenServices())
                 .tokenStore(tokenStore())
                 .accessTokenConverter(customAccessTokenConverter)
-                .userDetailsService(customUserDetailsService);
+                .userDetailsService(customUserDetailsService)
+                .exceptionTranslator(new MyWebResponseExceptionTranslator());
     }
 
     @Bean

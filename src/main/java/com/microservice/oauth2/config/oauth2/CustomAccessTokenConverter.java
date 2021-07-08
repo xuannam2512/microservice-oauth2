@@ -1,8 +1,8 @@
 package com.microservice.oauth2.config.oauth2;
 
 import com.microservice.oauth2.config.security.CustomUserDetails;
+import com.microservice.oauth2.constant.Status;
 import com.microservice.oauth2.service.RefreshTokenService;
-import com.microservice.oauth2.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -16,9 +16,6 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
 
     @Autowired
     private RefreshTokenService refreshTokenService;
-
-    @Autowired
-    private UserService userService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -50,6 +47,9 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
             info.put("id", userDetails.getId());
         if (userDetails.getUsername() != null)
             info.put("userName", userDetails.getUsername());
+        if (userDetails.isEnabled()) {
+            info.put("status", Status.ACTIVE);
+        }
 
         return info;
     }

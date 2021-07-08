@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         try {
             var user = userService.getUserByUsername(username);
             var authorities = Collections.singleton(new SimpleGrantedAuthority(user.getRole().getCode()));
-            return new CustomUserDetails(user.getId(), user.getUsername(), user.getPassword(), authorities);
+            return new CustomUserDetails(user.getId(), user.getUsername(), user.getPassword(), user.getStatus(), authorities);
         } catch (Exception e) {
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
         }
