@@ -3,7 +3,23 @@ server:
 
 spring:
   application:
-    name: authserver
+    name: auth
+  cloud:
+    consul:
+      discovery:
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        health-check-critical-timeout: 20s
+        instance-id: ${spring.application.name}
+        service-name: auth
+        prefer-ip-address: true
+      config:
+        fail-fast: false # if not in "prod" profile, do not force to use Spring Cloud Config
+        format: yaml
+        profile-separator: '-'
+        watch:
+          enabled: false
+        enabled: false
 
   datasource:
     driver-class-name: com.mysql.jdbc.Driver

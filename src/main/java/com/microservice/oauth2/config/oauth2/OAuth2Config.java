@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
@@ -68,6 +69,17 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     public AuthorizationServerTokenServices tokenServices() {
+        var tokenServices = new DefaultTokenServices();
+        tokenServices.setTokenStore(tokenStore());
+        tokenServices.setTokenEnhancer(customAccessTokenConverter);
+        tokenServices.setAuthenticationManager(createPreAuthProvider());
+        tokenServices.setReuseRefreshToken(true);
+        tokenServices.setSupportRefreshToken(true);
+        return tokenServices;
+    }
+
+    @Bean
+    public ResourceServerTokenServices resourceServerTokenServices() {
         var tokenServices = new DefaultTokenServices();
         tokenServices.setTokenStore(tokenStore());
         tokenServices.setTokenEnhancer(customAccessTokenConverter);

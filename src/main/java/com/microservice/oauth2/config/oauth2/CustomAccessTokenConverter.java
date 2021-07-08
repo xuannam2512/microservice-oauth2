@@ -40,15 +40,16 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
         return super.decode(token);
     }
 
+    public String encode(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
+        return super.encode(accessToken, authentication);
+    }
+
     private Map<String, Object> buildClaims(OAuth2AccessToken accessToken, CustomUserDetails userDetails) {
         Map<String, Object> info = new LinkedHashMap<>(accessToken.getAdditionalInformation());
         if (userDetails.getId() != null)
             info.put("id", userDetails.getId());
         if (userDetails.getUsername() != null)
             info.put("userName", userDetails.getUsername());
-
-        var permissions = userService.getPermissionByUserId(userDetails.getId());
-        info.put("permissions", permissions);
 
         return info;
     }
